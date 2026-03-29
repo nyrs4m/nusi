@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday, Nusi</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400;1,500&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;background:#0c0b09;overflow-x:hidden}
+
+#s-load,#s-term,#s-rom{min-height:100vh;width:100%}
+
+/* ══ NOISE + SCANLINES ══ */
+#noise{position:fixed;inset:0;pointer-events:none;z-index:998;opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px}
+#scan{position:fixed;inset:0;pointer-events:none;z-index:997;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.06) 3px,rgba(0,0,0,.06) 4px)}
+
+/* ══ LOADING ══ */
+#s-load{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:48px 24px;font-family:'Share Tech Mono',monospace;color:#e0ddd6;
+  background:#07080a;position:relative;z-index:10;
+  transition:opacity .9s ease,transform .9s ease;
+}
+#s-load.exit{opacity:0;transform:scale(.96) translateY(-16px)}
+
+.boot-tag{font-size:9px;letter-spacing:.3em;color:#2d6b27;text-transform:uppercase;text-align:center;margin-bottom:48px}
+.route-line{display:flex;align-items:center;gap:16px;justify-content:center;margin-bottom:52px}
+.rname{font-size:26px;letter-spacing:.12em;color:#c8f0c0;font-family:'Share Tech Mono',monospace}
+.rarrow{color:#3a8033;font-size:18px;animation:ap 1.8s ease-in-out infinite}
+@keyframes ap{0%,100%{opacity:.3}50%{opacity:1}}
+
+.pkts{width:100%;max-width:500px;margin-bottom:40px}
+.phdr{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.2em;color:#2d5a28;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #131d13}
+.pk{display:flex;align-items:center;gap:10px;margin-bottom:11px;opacity:0;transform:translateX(-10px);transition:opacity .45s,transform .45s}
+.pk.in{opacity:1;transform:translateX(0)}
+.pnum{font-size:9px;color:#2d5a28;min-width:16px}
+.pname{font-size:11px;color:#6ab864;min-width:180px;letter-spacing:.03em}
+.ptrack{flex:1;height:2px;background:#0e160e;border-radius:2px;overflow:hidden}
+.pfill{height:100%;width:0%;background:#4baa42;border-radius:2px;transition:width 1s cubic-bezier(.16,1,.3,1)}
+.pchk{font-size:10px;color:#4baa42;opacity:0;transition:opacity .4s;min-width:14px}
+
+.mtrack{width:100%;max-width:500px;height:1px;background:#131d13;margin-bottom:10px;position:relative}
+.mfill{height:100%;width:0%;background:#4baa42;transition:width .25s linear;position:relative}
+.mfill::after{content:'';position:absolute;right:-3px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:#90e488;box-shadow:0 0 8px #4baa42}
+.mmeta{width:100%;max-width:500px;display:flex;justify-content:space-between;font-size:9px;letter-spacing:.15em;color:#2d5a28}
+#pct{color:#4baa42;font-size:11px}
+
+#ubtn{
+  display:none;margin-top:40px;padding:13px 42px;
+  background:transparent;border:1px solid #2d6b27;color:#4baa42;
+  font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  cursor:pointer;position:relative;overflow:hidden;transition:color .35s
+}
+#ubtn::before{content:'';position:absolute;inset:0;background:#2d6b27;transform:translateX(-101%);transition:transform .4s cubic-bezier(.16,1,.3,1)}
+#ubtn:hover::before{transform:translateX(0)}
+#ubtn:hover{color:#0a0a0c}
+#ubtn.show{display:inline-block;animation:fup .7s cubic-bezier(.16,1,.3,1) both}
+@keyframes fup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ TRANSITION 1 ══ */
+#tov{position:fixed;inset:0;z-index:200;background:#07080a;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-family:'Share Tech Mono',monospace}
+#tov.on{display:flex}
+.tl{font-size:11px;color:#2d5a28;letter-spacing:.15em;opacity:0;transform:translateX(-5px);transition:opacity .3s,transform .3s}
+.tl.in{opacity:1;transform:translateX(0)}
+
+/* ══ TERMINAL ══ */
+#s-term{display:none;padding:64px 32px 80px;max-width:680px;margin:0 auto;font-family:'Share Tech Mono',monospace;color:#e0ddd6;opacity:0;transition:opacity .9s;position:relative;z-index:10}
+#s-term.on{display:block}
+#s-term.fade{opacity:1}
+.tprompt{font-size:12px;color:#2d5a28;margin-bottom:34px;letter-spacing:.06em}
+.tprompt span{color:#4baa42}
+.tline{font-size:12px;line-height:2.1;letter-spacing:.04em;color:#b0d0a8;opacity:0;transform:translateY(3px);transition:opacity .4s,transform .4s}
+.tline.vis{opacity:1;transform:translateY(0)}
+.tline.dim{color:#354d34;font-size:10px}
+.tline.hi{color:#dff0d8;font-size:14px;font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;letter-spacing:.1em;line-height:2.6}
+#cbtn{display:none;margin-top:18px;padding:12px 34px;background:transparent;border:1px solid #2d6b27;color:#4baa42;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;position:relative;overflow:hidden;transition:color .35s}
+#cbtn::before{content:'';position:absolute;inset:0;background:#2d6b27;transform:translateX(-101%);transition:transform .4s cubic-bezier(.16,1,.3,1)}
+#cbtn:hover::before{transform:translateX(0)}
+#cbtn:hover{color:#0a0a0c}
+#cbtn.show{display:inline-block;animation:fup .6s ease both}
+
+/* ══ TRANSITION 2 ══ */
+#tov2{position:fixed;inset:0;z-index:300;background:#07080a;display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;font-family:'Share Tech Mono',monospace}
+#tov2.on{display:flex}
+.t2l{font-size:11px;color:#8a7050;letter-spacing:.15em;opacity:0;transition:opacity .3s}
+.t2l.in{opacity:1}
+
+/* ══ ROMANTIC SCREEN ══ */
+#s-rom{
+  display:none;background:#0c0a07;
+  font-family:'Cormorant Garamond',serif;
+  opacity:0;transition:opacity 2s ease;
+}
+#s-rom.on{display:block}
+#s-rom.fade{opacity:1}
+
+.rom-hero{
+  position:relative;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  overflow:hidden;padding:60px 32px;
+}
+#star-canvas{position:absolute;inset:0;width:100%;height:100%}
+
+.rom-rule-top,.rom-rule-bot{
+  position:absolute;left:40px;right:40px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(196,164,107,.25),transparent);
+}
+.rom-rule-top{top:40px}
+.rom-rule-bot{bottom:40px}
+
+.corner{position:absolute;width:20px;height:20px}
+.corner::before,.corner::after{content:'';position:absolute;background:rgba(196,164,107,.35)}
+.corner::before{width:1px;height:100%}
+.corner::after{width:100%;height:1px}
+.corner.tl{top:40px;left:40px}
+.corner.tr{top:40px;right:40px}
+.corner.tr::before{right:0}
+.corner.bl{bottom:40px;left:40px}
+.corner.bl::before{bottom:0}
+.corner.br{bottom:40px;right:40px}
+.corner.br::before{right:0;bottom:0}
+.corner.br::after{bottom:0}
+
+.rom-eyebrow{
+  position:relative;z-index:2;
+  font-family:'Share Tech Mono',monospace;
+  font-size:9px;letter-spacing:.32em;color:rgba(196,164,107,.5);
+  text-transform:uppercase;margin-bottom:44px;
+  opacity:0;transition:opacity 1.4s ease .4s;
+}
+#s-rom.fade .rom-eyebrow{opacity:1}
+
+.rom-name{
+  position:relative;z-index:2;
+  font-size:clamp(72px,16vw,130px);
+  font-weight:300;font-style:italic;
+  color:#f2ead8;line-height:.88;letter-spacing:-.02em;
+  opacity:0;transform:translateY(32px);
+  transition:opacity 2s cubic-bezier(.16,1,.3,1) .7s,transform 2s cubic-bezier(.16,1,.3,1) .7s;
+  text-align:center;
+}
+#s-rom.fade .rom-name{opacity:1;transform:translateY(0)}
+
+.rom-shimmer{
+  position:relative;z-index:2;
+  width:0;height:1px;
+  background:linear-gradient(90deg,transparent,#c4a46b,transparent);
+  margin:36px auto 0;
+  transition:width 1.6s cubic-bezier(.16,1,.3,1) 1.5s;
+}
+#s-rom.fade .rom-shimmer{width:200px}
+
+.rom-sub{
+  position:relative;z-index:2;
+  font-size:15px;font-style:italic;font-weight:300;
+  color:rgba(196,164,107,.55);letter-spacing:.14em;margin-top:24px;
+  opacity:0;transition:opacity 1.2s ease 2s;
+}
+#s-rom.fade .rom-sub{opacity:1}
+
+.scroll-cue{
+  position:absolute;bottom:52px;left:50%;transform:translateX(-50%);
+  z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;
+  opacity:0;transition:opacity 1s ease 2.6s;
+}
+#s-rom.fade .scroll-cue{opacity:1}
+.sc-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.28em;color:rgba(196,164,107,.3);text-transform:uppercase}
+.sc-bar{width:1px;height:32px;background:rgba(196,164,107,.2);position:relative;overflow:hidden}
+.sc-bar::after{content:'';position:absolute;top:-100%;left:0;width:100%;height:100%;background:rgba(196,164,107,.6);animation:sc-drop 2s ease-in-out 3s infinite}
+@keyframes sc-drop{0%{top:-100%}100%{top:200%}}
+
+.rom-body{background:#0e0c09;position:relative}
+.rom-body::before{content:'';position:absolute;top:80px;bottom:80px;left:40px;width:1px;background:linear-gradient(180deg,transparent,rgba(196,164,107,.15) 20%,rgba(196,164,107,.15) 80%,transparent)}
+
+.rom-inner{max-width:580px;margin:0 auto;padding:100px 32px 120px;position:relative}
+
+.rom-section-label{
+  font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.28em;color:rgba(196,164,107,.3);
+  text-transform:uppercase;margin-bottom:56px;display:flex;align-items:center;gap:16px;
+  opacity:0;transition:opacity 1s ease;
+}
+.rom-section-label.vis{opacity:1}
+.rsl-line{flex:1;height:1px;background:rgba(196,164,107,.12)}
+
+.rom-p{margin-bottom:52px;opacity:0;transform:translateY(18px);transition:opacity 1.3s ease,transform 1.3s ease}
+.rom-p.vis{opacity:1;transform:translateY(0)}
+
+.rom-text{font-size:clamp(18px,3vw,24px);font-weight:300;color:#c8b898;line-height:1.75;letter-spacing:.015em}
+.rom-em{color:#c4a46b;font-style:italic}
+
+.rom-sig-block{
+  margin-top:80px;padding-top:48px;border-top:1px solid rgba(196,164,107,.12);
+  display:flex;justify-content:space-between;align-items:flex-end;
+  opacity:0;transition:opacity 1.4s ease;
+}
+.rom-sig-block.vis{opacity:1}
+.rom-sig{font-size:28px;font-style:italic;font-weight:300;color:#c4a46b;letter-spacing:.06em}
+.rom-date-stamp{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.2em;color:rgba(196,164,107,.25);text-align:right;line-height:1.8}
+
+.petal{position:fixed;pointer-events:none;border-radius:50% 0 50% 0;background:rgba(196,164,107,.35);animation:pfall linear infinite}
+@keyframes pfall{0%{transform:translateY(-20px) rotate(0deg);opacity:0}8%{opacity:.4}92%{opacity:.15}100%{transform:translateY(110vh) rotate(480deg);opacity:0}}
+</style>
+</head>
+<body>
+
+<div id="noise"></div>
+<div id="scan"></div>
+
+<!-- ══ SCREEN 1: LOADING ══ -->
+<div id="s-load">
+  <div class="boot-tag">[ birthday_protocol_v2.0 · encrypted ]</div>
+  <div class="route-line">
+    <span class="rname">Sam</span>
+    <span class="rarrow">──────►</span>
+    <span class="rname">Nusi</span>
+  </div>
+
+  <div class="pkts">
+    <div class="phdr"><span>PAYLOAD</span><span>STATUS</span></div>
+    <div class="pk" id="p0"><span class="pnum">01</span><span class="pname">inside_jokes.zip</span><div class="ptrack"><div class="pfill" id="pb0"></div></div><span class="pchk" id="pc0">✓</span></div>
+    <div class="pk" id="p1"><span class="pnum">02</span><span class="pname">all_the_vibes.tar</span><div class="ptrack"><div class="pfill" id="pb1"></div></div><span class="pchk" id="pc1">✓</span></div>
+    <div class="pk" id="p2"><span class="pnum">03</span><span class="pname">well_wishes.json</span><div class="ptrack"><div class="pfill" id="pb2"></div></div><span class="pchk" id="pc2">✓</span></div>
+    <div class="pk" id="p3"><span class="pnum">04</span><span class="pname">late_night_talks.log</span><div class="ptrack"><div class="pfill" id="pb3"></div></div><span class="pchk" id="pc3">✓</span></div>
+    <div class="pk" id="p4"><span class="pnum">05</span><span class="pname">feelings_i_kept.enc</span><div class="ptrack"><div class="pfill" id="pb4"></div></div><span class="pchk" id="pc4">✓</span></div>
+  </div>
+
+  <div class="mtrack"><div class="mfill" id="mfill"></div></div>
+  <div class="mmeta"><span>TRANSMITTING ···</span><span id="pct">0%</span></div>
+  <button id="ubtn" onclick="goT1()">▶ &nbsp;OPEN MESSAGE</button>
+</div>
+
+<!-- ══ TRANSITION 1 ══ -->
+<div id="tov">
+  <div class="tl" id="tl0">// decrypting feelings_i_kept.enc</div>
+  <div class="tl" id="tl1">// switching to human-readable format</div>
+  <div class="tl" id="tl2">// loading birthday_message.txt</div>
+  <div class="tl" id="tl3">// access granted · rendering</div>
+</div>
+
+<!-- ══ SCREEN 2: TERMINAL ══ -->
+<div id="s-term">
+  <div class="tprompt">sam@local:~$ <span>cat birthday_message.txt</span></div>
+  <div id="tbody"></div>
+  <button id="cbtn" onclick="goT2()">▶ &nbsp;CONTINUE</button>
+</div>
+
+<!-- ══ TRANSITION 2 ══ -->
+<div id="tov2">
+  <div class="t2l" id="t2l0">// protocol · switching to human mode</div>
+  <div class="t2l" id="t2l1">// loading · warmth.css</div>
+  <div class="t2l" id="t2l2">// decoding · the real feelings</div>
+  <div class="t2l" id="t2l3">// rendering ···</div>
+</div>
+
+<!-- ══ SCREEN 3: ROMANTIC ══ -->
+<div id="s-rom">
+  <div class="rom-hero">
+    <canvas id="star-canvas"></canvas>
+    <div class="rom-rule-top"></div>
+    <div class="rom-rule-bot"></div>
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+
+    <div class="rom-eyebrow">for nusi &nbsp;·&nbsp; My beloved</div>
+    <div class="rom-name">Happy<br>Birthday.</div>
+    <div class="rom-shimmer"></div>
+    <div class="rom-sub">— a message from somewhere across the map</div>
+
+    <div class="scroll-cue">
+      <span class="sc-label">read</span>
+      <div class="sc-bar"></div>
+    </div>
+  </div>
+
+  <div class="rom-body">
+    <div class="rom-inner">
+      <div class="rom-section-label" id="rsl">
+        <span>message</span>
+        <div class="rsl-line"></div>
+        <span>from Sam</span>
+      </div>
+
+      <div class="rom-p" id="rp0">
+        <div class="rom-text" style="font-size:clamp(22px,3.8vw,32px);color:#e8dcc8;line-height:1.65">
+          You came into my world quietly —<br>
+          the kind of person who <span class="rom-em">changes the light in a room</span><br>
+          without even trying.
+        </div>
+      </div>
+
+      <div class="rom-p" id="rp1">
+        <div class="rom-text">
+          There's a distance between us right now that I pretend<br>
+          is just a number. Miles. Coordinates. A timezone.<br>
+          But it isn't —
+          <span class="rom-em">it's everything I wish I could close.</span>
+        </div>
+      </div>
+
+      <div class="rom-p" id="rp2">
+        <div class="rom-text">
+          On every other day I keep that to myself.<br>
+          Today I won't. Today is yours, and you deserve<br>
+          to know that someone out here is
+          <span class="rom-em">thinking of you<br>with the whole of it.</span>
+        </div>
+      </div>
+
+      <div class="rom-p" id="rp3">
+        <div class="rom-text" style="color:#d8c8a8;font-size:clamp(20px,3.4vw,28px)">
+          Happy Birthday, Nusi.<br>
+          <span class="rom-em">I hope this year holds everything you are made of.</span><br>
+          <span class="rom-text" style="color:#d8c8a8;font-size:clamp(20px,3.4vw,28px)">
+            I love youu 😘
+          </span>
+        </div>
+        
+      </div>
+
+      <div class="rom-sig-block" id="rsig">
+        <div class="rom-sig">—Your Sam</div>
+        <div class="rom-date-stamp" id="rdate"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══ STARFIELD ══ */
+function initStars() {
+  const c = document.getElementById('star-canvas');
+  const ctx = c.getContext('2d');
+  let stars = [];
+
+  function resize() {
+    c.width = c.offsetWidth;
+    c.height = c.offsetHeight;
+    stars = [];
+    for (let i = 0; i < 180; i++) {
+      stars.push({
+        x: Math.random() * c.width,
+        y: Math.random() * c.height,
+        r: Math.random() * 1.1 + 0.1,
+        op: Math.random() * 0.6 + 0.1,
+        speed: Math.random() * 0.004 + 0.001,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    t += 0.012;
+    stars.forEach(s => {
+      const op = s.op * (0.5 + 0.5 * Math.sin(t * s.speed * 100 + s.phase));
+      ctx.globalAlpha = op;
+      ctx.fillStyle = '#f2ead8';
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+/* ══ PACKETS ══ */
+const PKTS = [
+  { delay: 200,  dur: 800  },
+  { delay: 700,  dur: 700  },
+  { delay: 1100, dur: 900  },
+  { delay: 1600, dur: 750  },
+  { delay: 1900, dur: 1200 }
+];
+const STEPS = [0, 18, 36, 54, 72, 100];
+let pct = 0;
+
+function animPct(target, dur, done) {
+  const from = pct, start = performance.now();
+  (function step(now) {
+    const t = Math.min((now - start) / dur, 1);
+    pct = from + (target - from) * t;
+    document.getElementById('mfill').style.width = pct + '%';
+    document.getElementById('pct').textContent = Math.round(pct) + '%';
+    if (t < 1) requestAnimationFrame(step);
+    else { pct = target; done && done(); }
+  })(start);
+}
+
+function runPkt(i) {
+  const row = document.getElementById('p' + i);
+  const bar = document.getElementById('pb' + i);
+  const chk = document.getElementById('pc' + i);
+  const p = PKTS[i];
+  setTimeout(() => {
+    row.classList.add('in');
+    setTimeout(() => { bar.style.width = '100%'; }, 120);
+    animPct(STEPS[i + 1], p.dur, () => {
+      chk.style.opacity = '1';
+      if (i < PKTS.length - 1) runPkt(i + 1);
+      else setTimeout(() => document.getElementById('ubtn').classList.add('show'), 500);
+    });
+  }, p.delay);
+}
+runPkt(0);
+
+/* ══ TRANSITION 1 ══ */
+function goT1() {
+  document.getElementById('s-load').classList.add('exit');
+  setTimeout(() => {
+    document.getElementById('s-load').style.display = 'none';
+    const ov = document.getElementById('tov');
+    ov.classList.add('on');
+    [0, 1, 2, 3].forEach(i => setTimeout(() => document.getElementById('tl' + i).classList.add('in'), i * 240));
+    setTimeout(() => { ov.classList.remove('on'); showTerm(); }, 1700);
+  }, 800);
+}
+
+/* ══ TERMINAL ══ */
+const LINES = [
+  { t: '# ─────────────────────────────────', c: 'dim' },
+  { t: '# birthday_message.txt · from: Sam', c: 'dim' },
+  { t: '# ─────────────────────────────────', c: 'dim' },
+  { t: '' },
+  { t: 'to        · Nusi' },
+  { t: 'date      · ' + '2026-03-30' },
+  { t: 'subject   · Happy Birthday', c: 'hi' },
+  { t: '' },
+  { t: 'Hey. You made it around the sun again.' },
+  { t: "That's not a small thing." },
+  { t: '' },
+  { t: '> distance ·· non-trivial',   c: 'dim' },
+  { t: '> feelings ·· confirmed',      c: 'dim' },
+  { t: '> sending_anyway ·· true',     c: 'dim' },
+  { t: '' },
+  { t: 'There is a longer message waiting.', c: 'hi' },
+  { t: "Press CONTINUE when you're ready." }
+];
+
+function showTerm() {
+  const s = document.getElementById('s-term');
+  s.classList.add('on');
+  setTimeout(() => s.classList.add('fade'), 80);
+  const body = document.getElementById('tbody');
+  LINES.forEach((l, i) => {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'tline ' + (l.c || '');
+      el.textContent = l.t;
+      body.appendChild(el);
+      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('vis')));
+      if (i === LINES.length - 1) {
+        setTimeout(() => document.getElementById('cbtn').classList.add('show'), 700);
+      }
+    }, i * 100);
+  });
+}
+
+/* ══ TRANSITION 2 ══ */
+function goT2() {
+  const t2 = document.getElementById('tov2');
+  t2.classList.add('on');
+  [0, 1, 2, 3].forEach(i => setTimeout(() => document.getElementById('t2l' + i).classList.add('in'), i * 320));
+  setTimeout(() => {
+    t2.style.transition = 'background 1.6s ease';
+    t2.style.background = '#0c0a07';
+    document.querySelectorAll('.t2l').forEach(el => { el.style.transition = 'opacity .8s'; el.style.opacity = '0'; });
+  }, 4 * 320 + 300);
+  setTimeout(() => {
+    t2.classList.remove('on');
+    t2.style.display = 'none';
+    document.getElementById('s-term').style.display = 'none';
+    showRomantic();
+  }, 4 * 320 + 2200);
+}
+
+/* ══ ROMANTIC ══ */
+function showRomantic() {
+  const s = document.getElementById('s-rom');
+  s.classList.add('on');
+  document.body.style.background = '#0c0a07';
+  initStars();
+  spawnPetals();
+  setTimeout(() => {
+    s.classList.add('fade');
+    scheduleContent();
+  }, 100);
+}
+
+function scheduleContent() {
+  setTimeout(() => document.getElementById('rsl').classList.add('vis'), 2000);
+  const delays = [2600, 3300, 4100, 4900];
+  ['rp0', 'rp1', 'rp2', 'rp3'].forEach((id, i) => {
+    setTimeout(() => document.getElementById(id).classList.add('vis'), delays[i]);
+  });
+  setTimeout(() => {
+    const sig = document.getElementById('rsig');
+    sig.classList.add('vis');
+    const d = document.getElementById('rdate');
+    d.innerHTML = ('30th March, 2026').toUpperCase() + '<br>FROM SAM<br>WITH LOVE';
+  }, 5800);
+}
+
+function spawnPetals() {
+  for (let i = 0; i < 20; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'petal';
+      p.style.cssText = `left:${Math.random() * 100}vw;width:${4 + Math.random() * 4}px;height:${6 + Math.random() * 5}px;animation-duration:${8 + Math.random() * 10}s;animation-delay:${Math.random() * 8}s;transform:rotate(${Math.random() * 180}deg)`;
+      document.body.appendChild(p);
+    }, i * 350);
+  }
+}
+</script>
+</body>
+</html>
