@@ -107,7 +107,7 @@ html,body{width:100%;background:#0c0b09;overflow-x:hidden}
 #star-canvas{position:absolute;inset:0;width:100%;height:100%}
 
 .rom-rule-top,.rom-rule-bot{
-  position:absolute;left:40px;right:40px;height:1px;
+  position:absolute;left:clamp(20px, 5vw, 40px);right:clamp(20px, 5vw, 40px);height:1px;
   background:linear-gradient(90deg,transparent,rgba(196,164,107,.25),transparent);
 }
 .rom-rule-top{top:40px}
@@ -117,12 +117,12 @@ html,body{width:100%;background:#0c0b09;overflow-x:hidden}
 .corner::before,.corner::after{content:'';position:absolute;background:rgba(196,164,107,.35)}
 .corner::before{width:1px;height:100%}
 .corner::after{width:100%;height:1px}
-.corner.tl{top:40px;left:40px}
-.corner.tr{top:40px;right:40px}
+.corner.tl{top:clamp(20px, 5vw, 40px);left:clamp(20px, 5vw, 40px)}
+.corner.tr{top:clamp(20px, 5vw, 40px);right:clamp(20px, 5vw, 40px)}
 .corner.tr::before{right:0}
-.corner.bl{bottom:40px;left:40px}
+.corner.bl{bottom:clamp(20px, 5vw, 40px);left:clamp(20px, 5vw, 40px)}
 .corner.bl::before{bottom:0}
-.corner.br{bottom:40px;right:40px}
+.corner.br{bottom:clamp(20px, 5vw, 40px);right:clamp(20px, 5vw, 40px)}
 .corner.br::before{right:0;bottom:0}
 .corner.br::after{bottom:0}
 
@@ -175,7 +175,7 @@ html,body{width:100%;background:#0c0b09;overflow-x:hidden}
 @keyframes sc-drop{0%{top:-100%}100%{top:200%}}
 
 .rom-body{background:#0e0c09;position:relative}
-.rom-body::before{content:'';position:absolute;top:80px;bottom:80px;left:40px;width:1px;background:linear-gradient(180deg,transparent,rgba(196,164,107,.15) 20%,rgba(196,164,107,.15) 80%,transparent)}
+.rom-body::before{content:'';position:absolute;top:80px;bottom:80px;left:clamp(20px, 5vw, 40px);width:1px;background:linear-gradient(180deg,transparent,rgba(196,164,107,.15) 20%,rgba(196,164,107,.15) 80%,transparent)}
 
 .rom-inner{max-width:580px;margin:0 auto;padding:100px 32px 120px;position:relative}
 
@@ -231,7 +231,7 @@ html,body{width:100%;background:#0c0b09;overflow-x:hidden}
 
   <div class="mtrack"><div class="mfill" id="mfill"></div></div>
   <div class="mmeta"><span>TRANSMITTING ···</span><span id="pct">0%</span></div>
-  <button id="ubtn" onclick="goT1()">▶ &nbsp;OPEN MESSAGE</button>
+  <button id="ubtn" onclick="if(navigator.vibrate) navigator.vibrate(50); goT1()">▶ &nbsp;OPEN MESSAGE</button>
 </div>
 
 <!-- ══ TRANSITION 1 ══ -->
@@ -246,7 +246,7 @@ html,body{width:100%;background:#0c0b09;overflow-x:hidden}
 <div id="s-term">
   <div class="tprompt">sam@local:~$ <span>cat birthday_message.txt</span></div>
   <div id="tbody"></div>
-  <button id="cbtn" onclick="goT2()">▶ &nbsp;CONTINUE</button>
+  <button id="cbtn" onclick="if(navigator.vibrate) navigator.vibrate(50); goT2()">▶ &nbsp;CONTINUE</button>
 </div>
 
 <!-- ══ TRANSITION 2 ══ -->
